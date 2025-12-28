@@ -1360,6 +1360,33 @@ async function setupSettingsUI() {
                 </div>
 
                 <hr class="sysHR" />
+                <h4 class="kibitzer-section-title">⏱️ Timing & Context</h4>
+                
+                <div class="kibitzer-setting-row">
+                    <label>Comment Frequency:</label>
+                    <div class="range-block-enhanced">
+                        <input type="range" id="kibitzer-frequency" min="1" max="50" step="1">
+                        <input type="number" id="kibitzer-frequency-num" class="kibitzer-num-input" min="1" max="50">
+                        <button id="kibitzer-frequency-lock" class="kibitzer-lock-btn" title="Lock Frequency">
+                            <i class="fa-solid fa-lock-open"></i>
+                        </button>
+                    </div>
+                    <small>Comment every N messages</small>
+                </div>
+
+                <div class="kibitzer-setting-row">
+                    <label>Context Messages:</label>
+                    <div class="range-block-enhanced">
+                        <input type="range" id="kibitzer-context" min="1" max="50" step="1">
+                        <input type="number" id="kibitzer-context-num" class="kibitzer-num-input" min="1" max="50">
+                        <button id="kibitzer-context-lock" class="kibitzer-lock-btn" title="Lock Context">
+                            <i class="fa-solid fa-lock-open"></i>
+                        </button>
+                    </div>
+                    <small>How many recent messages to analyze</small>
+                </div>
+
+                <hr class="sysHR" />
                 <h4 class="kibitzer-section-title">Character & UI</h4>
                 <div class="kibitzer-setting-row">
                     <label>Critic Character:</label>
@@ -1554,6 +1581,81 @@ async function setupSettingsUI() {
                 populatePresetDropdown();
             }
         }, 200);
+    });
+
+    // --- FREQUENCY SETTINGS ---
+    const updateFrequencyUI = (val) => {
+        $('#kibitzer-frequency').val(val);
+        $('#kibitzer-frequency-num').val(val);
+        settings.frequency = parseInt(val);
+        saveSettings();
+    };
+
+    // Initialize values
+    $('#kibitzer-frequency').val(settings.frequency);
+    $('#kibitzer-frequency-num').val(settings.frequency);
+
+    // Bind events
+    $('#kibitzer-frequency').on('input', (e) => updateFrequencyUI(e.target.value));
+    $('#kibitzer-frequency-num').on('change', (e) => updateFrequencyUI(e.target.value));
+
+    // Lock Button Logic
+    const updateFreqLockUI = () => {
+        const btn = $('#kibitzer-frequency-lock');
+        const icon = btn.find('i');
+        if (settings.frequencyLocked) {
+            btn.addClass('locked');
+            icon.removeClass('fa-lock-open').addClass('fa-lock');
+        } else {
+            btn.removeClass('locked');
+            icon.removeClass('fa-lock').addClass('fa-lock-open');
+        }
+    };
+    
+    updateFreqLockUI(); // Init
+    
+    $('#kibitzer-frequency-lock').on('click', () => {
+        settings.frequencyLocked = !settings.frequencyLocked;
+        updateFreqLockUI();
+        saveSettings();
+    });
+
+
+    // --- CONTEXT SETTINGS ---
+    const updateContextUI = (val) => {
+        $('#kibitzer-context').val(val);
+        $('#kibitzer-context-num').val(val);
+        settings.maxContextMessages = parseInt(val);
+        saveSettings();
+    };
+
+    // Initialize values
+    $('#kibitzer-context').val(settings.maxContextMessages);
+    $('#kibitzer-context-num').val(settings.maxContextMessages);
+
+    // Bind events
+    $('#kibitzer-context').on('input', (e) => updateContextUI(e.target.value));
+    $('#kibitzer-context-num').on('change', (e) => updateContextUI(e.target.value));
+
+    // Lock Button Logic
+    const updateContextLockUI = () => {
+        const btn = $('#kibitzer-context-lock');
+        const icon = btn.find('i');
+        if (settings.contextLocked) {
+            btn.addClass('locked');
+            icon.removeClass('fa-lock-open').addClass('fa-lock');
+        } else {
+            btn.removeClass('locked');
+            icon.removeClass('fa-lock').addClass('fa-lock-open');
+        }
+    };
+
+    updateContextLockUI(); // Init
+
+    $('#kibitzer-context-lock').on('click', () => {
+        settings.contextLocked = !settings.contextLocked;
+        updateContextLockUI();
+        saveSettings();
     });
 }
 
