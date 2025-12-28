@@ -1,0 +1,1299 @@
+/**
+ * Kibitzer Extension Styles
+ * Kawaii digital journal / planner aesthetic ♡
+ * Inspired by cute stationery and Y2K interfaces
+ */
+
+/* ========================================
+   CSS Variables - Defaults (overridden by JS)
+   ======================================== */
+
+#kibitzer-widget {
+    --kb-primary: #ffb6c1;
+    --kb-secondary: #ffe4e9;
+    --kb-accent: #ff8fa3;
+    --kb-text: #5a4a5c;
+    --kb-avatar-size: 70px;
+    --kb-bubble-offset: 80px;
+    --kb-opacity: 1;
+}
+
+/* ========================================
+   Main Widget Container
+   ======================================== */
+
+#kibitzer-widget {
+    position: fixed;
+    z-index: 9999;
+    font-family: 'Nunito', 'Segoe UI', 'Comic Sans MS', sans-serif;
+    opacity: var(--kb-opacity);
+    transition: opacity 0.3s ease;
+}
+
+/* ========================================
+   Circular Avatar Bubble
+   ======================================== */
+
+.kibitzer-avatar-bubble {
+    width: var(--kb-avatar-size);
+    height: var(--kb-avatar-size);
+    border-radius: 50%;
+    background: linear-gradient(145deg, var(--kb-secondary), var(--kb-primary));
+    border: 3px solid #ffffff;
+    box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.12),
+        0 0 0 2px var(--kb-primary),
+        inset 0 2px 8px rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.kibitzer-avatar-bubble:hover {
+    transform: scale(1.08) rotate(3deg);
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.15),
+        0 0 0 3px var(--kb-accent),
+        inset 0 2px 8px rgba(255, 255, 255, 0.5);
+}
+
+.kibitzer-avatar-bubble:active {
+    transform: scale(1.02);
+}
+
+#kibitzer-widget.dragging .kibitzer-avatar-bubble {
+    transform: scale(1.1);
+    cursor: grabbing;
+}
+
+.kibitzer-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.kibitzer-avatar-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: #ffffff;
+    font-size: calc(var(--kb-avatar-size) * 0.4);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Notification dot */
+.kibitzer-notification-dot {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    width: 18px;
+    height: 18px;
+    background: linear-gradient(135deg, #ff6b8a, #ff4778);
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(255, 71, 120, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: white;
+}
+
+.kibitzer-notification-dot::after {
+    content: '♡';
+    font-size: 9px;
+}
+
+.kibitzer-notification-dot.visible {
+    opacity: 1;
+    transform: scale(1);
+    animation: notificationPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes notificationPop {
+    0% { transform: scale(0) rotate(-20deg); }
+    50% { transform: scale(1.3) rotate(10deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+/* Sparkle decorations around avatar */
+.kibitzer-avatar-bubble::before {
+    content: '✦';
+    position: absolute;
+    top: -10px;
+    right: -6px;
+    font-size: 16px;
+    color: var(--kb-accent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    animation: twinkle 2s ease-in-out infinite;
+    z-index: 10;
+    text-shadow: 0 0 4px var(--kb-accent);
+}
+
+.kibitzer-avatar-bubble::after {
+    content: '✧';
+    position: absolute;
+    bottom: -6px;
+    left: -8px;
+    font-size: 12px;
+    color: var(--kb-primary);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    animation: twinkle 2s ease-in-out infinite 0.5s;
+    z-index: 10;
+}
+
+.kibitzer-avatar-bubble:hover::before,
+.kibitzer-avatar-bubble:hover::after {
+    opacity: 1;
+}
+
+@keyframes twinkle {
+    0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.6; }
+    50% { transform: scale(1.3) rotate(20deg); opacity: 1; }
+}
+
+/* ========================================
+   Speech Bubble - Sticky Note Style
+   ======================================== */
+
+.kibitzer-speech-bubble {
+    position: absolute;
+    left: var(--kb-bubble-offset);
+    top: 50%;
+    transform: translateY(-50%) scale(0.8);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-width: 280px;
+    min-width: 160px;
+}
+
+#kibitzer-widget.has-speech .kibitzer-speech-bubble {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+    pointer-events: auto;
+}
+
+#kibitzer-widget.speech-new .kibitzer-speech-bubble {
+    animation: speechPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes speechPop {
+    0% { transform: translateY(-50%) scale(0.5) rotate(-5deg); opacity: 0; }
+    60% { transform: translateY(-50%) scale(1.05) rotate(2deg); }
+    100% { transform: translateY(-50%) scale(1) rotate(0deg); opacity: 1; }
+}
+
+.kibitzer-speech-content {
+    background: #ffffff;
+    border: 1.5px solid var(--kb-primary);
+    border-radius: 16px;
+    padding: 14px 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Tape decoration on speech bubble */
+.kibitzer-speech-content::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-2deg);
+    width: 50px;
+    height: 16px;
+    background: linear-gradient(180deg, 
+        rgba(255, 255, 255, 0.8) 0%, 
+        var(--kb-secondary) 50%,
+        rgba(255, 255, 255, 0.6) 100%);
+    border-radius: 2px;
+    opacity: 0.9;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.kibitzer-speech-content:hover {
+    border-color: var(--kb-accent);
+    transform: translateY(-2px) rotate(1deg);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+}
+
+.kibitzer-speech-bubble .kibitzer-text {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--kb-text);
+    word-wrap: break-word;
+}
+
+/* Speech bubble tail - cute triangle */
+.kibitzer-speech-tail {
+    position: absolute;
+    left: -9px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-right: 10px solid var(--kb-primary);
+    filter: drop-shadow(-2px 0 2px rgba(0,0,0,0.05));
+}
+
+.kibitzer-speech-tail::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: -5.5px;
+    width: 0;
+    height: 0;
+    border-top: 5.5px solid transparent;
+    border-bottom: 5.5px solid transparent;
+    border-right: 8px solid #ffffff;
+}
+
+/* Close button - cute X */
+.kibitzer-bubble-close {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, var(--kb-accent), var(--kb-primary));
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    color: #ffffff;
+    font-size: 9px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.kibitzer-speech-bubble:hover .kibitzer-bubble-close {
+    opacity: 1;
+}
+
+.kibitzer-bubble-close:hover {
+    transform: scale(1.2) rotate(90deg);
+}
+
+/* ========================================
+   Speech Bubble - Left Position
+   ======================================== */
+
+#kibitzer-widget.bubble-left .kibitzer-speech-bubble,
+#kibitzer-widget.bubble-left .kibitzer-typing-bubble,
+#kibitzer-widget.bubble-left .kibitzer-panel {
+    left: auto;
+    right: var(--kb-bubble-offset);
+}
+
+#kibitzer-widget.bubble-left .kibitzer-speech-tail,
+#kibitzer-widget.bubble-left .kibitzer-typing-bubble .kibitzer-speech-tail {
+    left: auto;
+    right: -9px;
+    border-right: none;
+    border-left: 10px solid var(--kb-primary);
+}
+
+#kibitzer-widget.bubble-left .kibitzer-speech-tail::after,
+#kibitzer-widget.bubble-left .kibitzer-typing-bubble .kibitzer-speech-tail::after {
+    left: auto;
+    right: 3px;
+    border-right: none;
+    border-left: 8px solid #ffffff;
+}
+
+/* ========================================
+   Typing Indicator - Cute Dots
+   ======================================== */
+
+.kibitzer-typing-bubble {
+    position: absolute;
+    left: var(--kb-bubble-offset);
+    top: 50%;
+    transform: translateY(-50%) scale(0.8);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#kibitzer-widget.is-typing .kibitzer-typing-bubble {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+}
+
+.kibitzer-typing-bubble .kibitzer-typing {
+    background: #ffffff;
+    border: 1.5px solid var(--kb-primary);
+    border-radius: 20px;
+    padding: 12px 18px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.kibitzer-typing-bubble .kibitzer-speech-tail {
+    position: absolute;
+    left: -9px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.kibitzer-typing .dot {
+    width: 8px;
+    height: 8px;
+    background: var(--kb-primary);
+    border-radius: 50%;
+    animation: typingBounce 1.4s infinite ease-in-out;
+}
+
+.kibitzer-typing .dot:nth-child(1) { animation-delay: 0s; }
+.kibitzer-typing .dot:nth-child(2) { animation-delay: 0.2s; }
+.kibitzer-typing .dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+    0%, 60%, 100% { 
+        transform: translateY(0) scale(1); 
+        background: var(--kb-primary);
+    }
+    30% { 
+        transform: translateY(-10px) scale(1.1); 
+        background: var(--kb-accent);
+    }
+}
+
+/* ========================================
+   Expanded Panel - Window Style
+   ======================================== */
+
+.kibitzer-panel {
+    position: absolute;
+    left: var(--kb-bubble-offset);
+    top: 50%;
+    transform: translateY(-50%) scale(0.8);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 300px;
+    background: #ffffff;
+    border: 1.5px solid var(--kb-primary);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+
+#kibitzer-widget.panel-open .kibitzer-panel {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+    pointer-events: auto;
+}
+
+#kibitzer-widget.panel-open .kibitzer-speech-bubble,
+#kibitzer-widget.panel-open .kibitzer-typing-bubble {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Panel Header - Window Title Bar */
+.kibitzer-panel-header {
+    background: var(--kb-secondary);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1.5px solid var(--kb-primary);
+    position: relative;
+}
+
+/* Window dots decoration */
+.kibitzer-panel-header::before {
+    content: '● ● ●';
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 8px;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.7);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.kibitzer-panel-title {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin-left: 45px;
+}
+
+.kibitzer-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--kb-text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.kibitzer-name::after {
+    content: '♡';
+    font-size: 12px;
+    color: var(--kb-accent);
+}
+
+.kibitzer-subtitle {
+    font-size: 10px;
+    color: var(--kb-text);
+    opacity: 0.7;
+    font-style: italic;
+}
+
+.kibitzer-panel-controls {
+    display: flex;
+    gap: 6px;
+}
+
+.kibitzer-panel .kibitzer-btn {
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--kb-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+}
+
+.kibitzer-panel .kibitzer-btn:hover {
+    background: #ffffff;
+    color: var(--kb-accent);
+    transform: scale(1.1);
+}
+
+.kibitzer-panel .kibitzer-btn:active {
+    transform: scale(0.95);
+}
+
+.kibitzer-panel .kibitzer-btn i {
+    font-size: 11px;
+}
+
+/* Panel Body - Grid Paper */
+.kibitzer-panel-body {
+    padding: 12px;
+    max-height: 250px;
+    overflow-y: auto;
+    background: #ffffff;
+    /* Grid paper effect */
+    background-image: 
+        linear-gradient(var(--kb-secondary) 1px, transparent 1px),
+        linear-gradient(90deg, var(--kb-secondary) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.kibitzer-history {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.kibitzer-history-item {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--kb-secondary);
+    border-left: 2px solid var(--kb-primary);
+    border-radius: 8px;
+    padding: 10px 12px;
+    transition: all 0.3s ease;
+    position: relative;
+    backdrop-filter: blur(4px);
+}
+
+/* Pushpin decoration */
+.kibitzer-history-item::before {
+    content: '📌';
+    position: absolute;
+    top: -8px;
+    right: 10px;
+    font-size: 14px;
+    transform: rotate(15deg);
+}
+
+.kibitzer-history-item.new {
+    animation: historySlide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-left-color: var(--kb-accent);
+    background: var(--kb-secondary);
+}
+
+@keyframes historySlide {
+    0% { transform: translateX(-20px); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+}
+
+.kibitzer-history-item p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--kb-text);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+/* Panel Footer - Status Bar */
+.kibitzer-panel-footer {
+    background: var(--kb-secondary);
+    padding: 8px 14px;
+    border-top: 1px dashed var(--kb-primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.kibitzer-status-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--kb-text);
+}
+
+.kibitzer-status-icon {
+    font-size: 14px;
+    color: var(--kb-accent);
+    animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+/* Music player style indicator */
+.kibitzer-panel-footer::after {
+    content: '◁  ❚❚  ▷';
+    font-size: 10px;
+    color: var(--kb-primary);
+    opacity: 0.6;
+    letter-spacing: 2px;
+}
+
+/* Custom scrollbar */
+.kibitzer-panel-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.kibitzer-panel-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.kibitzer-panel-body::-webkit-scrollbar-thumb {
+    background: var(--kb-primary);
+    border-radius: 3px;
+}
+
+.kibitzer-panel-body::-webkit-scrollbar-thumb:hover {
+    background: var(--kb-accent);
+}
+
+/* ========================================
+   Settings Panel (Extension Settings)
+   ======================================== */
+
+#kibitzer-settings {
+    margin-top: 10px;
+}
+
+#kibitzer-settings .inline-drawer-header {
+    background: linear-gradient(90deg, rgba(255, 182, 193, 0.3) 0%, transparent 100%);
+    border-left: 3px solid #ffb6c1;
+}
+
+#kibitzer-settings .inline-drawer-header b {
+    color: #ff8fa3;
+}
+
+#kibitzer-settings .inline-drawer-header b::before {
+    content: '✦ ';
+    font-size: 10px;
+}
+
+#kibitzer-settings .inline-drawer-header b::after {
+    content: ' ✦';
+    font-size: 10px;
+}
+
+.kibitzer-settings-panel .kibitzer-setting-row {
+    margin-bottom: 16px;
+}
+
+.kibitzer-settings-panel .kibitzer-section-title {
+    margin: 8px 0 12px 0;
+    color: #ff8fa3;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.kibitzer-settings-panel .kibitzer-section-title::before {
+    content: '';
+    flex: 0 0 20px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #ffb6c1);
+}
+
+.kibitzer-settings-panel .kibitzer-section-title::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, #ffb6c1, transparent);
+}
+
+.kibitzer-settings-panel label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: var(--SmartThemeBodyColor);
+}
+
+.kibitzer-settings-panel small {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--SmartThemeQuoteColor);
+    opacity: 0.8;
+}
+
+.kibitzer-settings-panel .range-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.kibitzer-settings-panel .range-block input[type="range"] {
+    flex: 1;
+}
+
+.kibitzer-settings-panel .range-block span {
+    min-width: 40px;
+    text-align: center;
+    font-weight: 600;
+    color: #ff8fa3;
+}
+
+/* Enhanced range block with number input and lock */
+.range-block-enhanced {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.range-block-enhanced input[type="range"] {
+    flex: 1;
+}
+
+.kibitzer-num-input {
+    width: 50px;
+    padding: 4px 6px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #ff8fa3;
+}
+
+.kibitzer-num-input:focus {
+    outline: none;
+    border-color: #ffb6c1;
+}
+
+.kibitzer-num-input:disabled {
+    background: #f5f5f5;
+    color: #aaa;
+}
+
+.kibitzer-lock-btn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #fff;
+    color: #aaa;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.kibitzer-lock-btn:hover {
+    border-color: #ffb6c1;
+    color: #ff8fa3;
+}
+
+.kibitzer-lock-btn.locked {
+    background: #ff8fa3;
+    border-color: #ff8fa3;
+    color: #fff;
+}
+
+.kibitzer-lock-btn i {
+    font-size: 11px;
+}
+
+.kibitzer-settings-panel textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.kibitzer-settings-panel .menu_button {
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+
+/* Character select row with refresh button */
+.kibitzer-char-select-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.kibitzer-char-select-row select {
+    flex: 1;
+}
+
+.kibitzer-char-select-row .menu_button {
+    margin: 0;
+    padding: 6px 10px;
+    flex-shrink: 0;
+}
+
+/* Custom color inputs */
+.kibitzer-custom-colors {
+    background: rgba(255, 182, 193, 0.1);
+    border: 1px dashed #ffb6c1;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 16px;
+}
+
+.kibitzer-color-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.kibitzer-color-row:last-child {
+    margin-bottom: 0;
+}
+
+.kibitzer-color-row label {
+    min-width: 80px;
+    margin: 0;
+    font-size: 12px;
+}
+
+.kibitzer-color-row input[type="color"] {
+    width: 50px;
+    height: 30px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 2px;
+}
+
+.kibitzer-color-row input[type="color"]:hover {
+    border-color: #ffb6c1;
+}
+
+/* Hint text */
+.kibitzer-hint {
+    display: block;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, rgba(255, 182, 193, 0.15) 0%, rgba(255, 228, 233, 0.2) 100%);
+    border-radius: 10px;
+    border: 1px dashed rgba(255, 143, 163, 0.3);
+    color: #ff8fa3 !important;
+    font-style: italic;
+    font-size: 12px;
+}
+
+/* Button row */
+.kibitzer-button-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+.kibitzer-button-row .menu_button {
+    flex: 1;
+    margin: 0 !important;
+    white-space: nowrap;
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+/* Display mode sub-options */
+.kibitzer-display-options {
+    margin-left: 12px;
+    padding-left: 12px;
+    border-left: 2px solid var(--kb-primary, #ffb6c1);
+    margin-bottom: 12px;
+}
+
+/* ========================================
+   Responsive / Mobile Adjustments
+   ======================================== */
+
+@media (max-width: 768px) {
+    .kibitzer-panel {
+        width: 260px;
+    }
+    
+    .kibitzer-speech-bubble {
+        max-width: 200px;
+    }
+}
+
+/* ========================================
+   Initial Animation
+   ======================================== */
+
+#kibitzer-widget {
+    animation: widgetAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes widgetAppear {
+    0% {
+        opacity: 0;
+        transform: scale(0.3) rotate(-10deg);
+    }
+    60% {
+        transform: scale(1.1) rotate(3deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+/* ========================================
+   Bar Display Mode
+   ======================================== */
+
+#kibitzer-bar {
+    --kb-primary: #ffb6c1;
+    --kb-secondary: #ffe4e9;
+    --kb-accent: #ff8fa3;
+    --kb-text: #5a4a5c;
+    --kb-opacity: 1;
+    --scroll-duration: 15s;
+    
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    background: transparent;
+    margin: 0;
+    opacity: var(--kb-opacity);
+    font-family: 'Nunito', 'Segoe UI', 'Comic Sans MS', sans-serif;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+#kibitzer-bar.has-new {
+    animation: barPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes barPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+/* Bar Avatar */
+.kibitzer-bar-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, var(--kb-secondary), var(--kb-primary));
+    border: 2px solid var(--kb-primary);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.kibitzer-bar-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.kibitzer-bar-avatar-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: #ffffff;
+    font-size: 12px;
+}
+
+/* Bar Content */
+.kibitzer-bar-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.kibitzer-bar-name {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--kb-accent);
+    flex-shrink: 0;
+}
+
+.kibitzer-bar-separator {
+    color: var(--kb-primary);
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+/* ========================================
+   Bar Text - Ticker/Marquee Style
+   ======================================== */
+
+.kibitzer-bar-text-container {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.kibitzer-bar-text {
+    display: inline-block;
+    font-size: 13px;
+    color: var(--kb-text);
+    white-space: nowrap;
+}
+
+/* Default state - text is visible and static */
+#kibitzer-bar:not(.ticker-active) .kibitzer-bar-text {
+    transform: translateX(0);
+}
+
+/* Ticker/Marquee effect - only when ticker-active class is present */
+#kibitzer-bar.ticker-active .kibitzer-bar-text-container {
+    mask-image: linear-gradient(90deg, #000 90%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, #000 90%, transparent);
+}
+
+#kibitzer-bar.ticker-active .kibitzer-bar-text {
+    animation: marqueeScroll var(--scroll-duration, 15s) linear infinite;
+}
+
+/* Ticker runs continuously - no pause on hover to prevent freezing issues */
+
+/* Marquee animation - scroll from visible position to off-screen left, then jump back */
+@keyframes marqueeScroll {
+    0% { 
+        transform: translateX(0%);
+    }
+    100% { 
+        transform: translateX(var(--scroll-offset, -100%));
+    }
+}
+
+/* Bar Typing Indicator */
+.kibitzer-bar-typing {
+    display: none;
+    align-items: center;
+    gap: 4px;
+    padding: 0 8px;
+}
+
+#kibitzer-bar.is-typing .kibitzer-bar-typing {
+    display: flex;
+}
+
+#kibitzer-bar.is-typing .kibitzer-bar-content {
+    display: none;
+}
+
+.kibitzer-bar-typing .dot {
+    width: 6px;
+    height: 6px;
+    background: var(--kb-primary);
+    border-radius: 50%;
+    animation: typingBounce 1.4s infinite ease-in-out;
+}
+
+.kibitzer-bar-typing .dot:nth-child(1) { animation-delay: 0s; }
+.kibitzer-bar-typing .dot:nth-child(2) { animation-delay: 0.2s; }
+.kibitzer-bar-typing .dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ========================================
+   Bar Panel - Smart Positioning
+   ======================================== */
+
+.kibitzer-bar-panel {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(10px) scale(0.95);
+    width: 300px;
+    max-width: calc(100vw - 20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 1000;
+}
+
+/* Panel opening upward (default) */
+.kibitzer-bar-panel.panel-above {
+    transform-origin: bottom center;
+}
+
+/* Panel opening downward */
+.kibitzer-bar-panel.panel-below {
+    transform-origin: top center;
+}
+
+#kibitzer-bar.panel-open .kibitzer-bar-panel {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0) scale(1);
+}
+
+/* Adjust transform when panel has explicit positioning from JS */
+#kibitzer-bar.panel-open .kibitzer-bar-panel.panel-above,
+#kibitzer-bar.panel-open .kibitzer-bar-panel.panel-below {
+    /* Let JS handle the transform via inline styles */
+}
+
+.kibitzer-bar-panel-inner {
+    background: #ffffff;
+    border: 1.5px solid var(--kb-primary);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+/* Use same panel styles as widget */
+.kibitzer-bar-panel .kibitzer-panel-header {
+    background: var(--kb-secondary);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1.5px solid var(--kb-primary);
+    position: relative;
+}
+
+.kibitzer-bar-panel .kibitzer-panel-header::before {
+    content: '● ● ●';
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 8px;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.7);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.kibitzer-bar-panel .kibitzer-panel-title {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin-left: 45px;
+}
+
+.kibitzer-bar-panel .kibitzer-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--kb-text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.kibitzer-bar-panel .kibitzer-name::after {
+    content: '♡';
+    font-size: 12px;
+    color: var(--kb-accent);
+}
+
+.kibitzer-bar-panel .kibitzer-subtitle {
+    font-size: 10px;
+    color: var(--kb-text);
+    opacity: 0.7;
+    font-style: italic;
+}
+
+.kibitzer-bar-panel .kibitzer-panel-controls {
+    display: flex;
+    gap: 6px;
+}
+
+.kibitzer-bar-panel .kibitzer-btn {
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--kb-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.kibitzer-bar-panel .kibitzer-btn:hover {
+    background: #ffffff;
+    color: var(--kb-accent);
+    transform: scale(1.1);
+}
+
+.kibitzer-bar-panel .kibitzer-btn i {
+    font-size: 11px;
+}
+
+.kibitzer-bar-panel .kibitzer-panel-body {
+    padding: 12px;
+    max-height: 250px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #ffffff;
+    background-image: 
+        linear-gradient(var(--kb-secondary) 1px, transparent 1px),
+        linear-gradient(90deg, var(--kb-secondary) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.kibitzer-bar-panel .kibitzer-history {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.kibitzer-bar-panel .kibitzer-history-item {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--kb-secondary);
+    border-left: 2px solid var(--kb-primary);
+    border-radius: 8px;
+    padding: 10px 12px;
+    position: relative;
+    backdrop-filter: blur(4px);
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.kibitzer-bar-panel .kibitzer-history-item::before {
+    content: '📌';
+    position: absolute;
+    top: -8px;
+    right: 10px;
+    font-size: 14px;
+    transform: rotate(15deg);
+}
+
+.kibitzer-bar-panel .kibitzer-history-item.new {
+    animation: historySlide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-left-color: var(--kb-accent);
+    background: var(--kb-secondary);
+}
+
+.kibitzer-bar-panel .kibitzer-history-item p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--kb-text);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    max-width: 100%;
+}
+
+.kibitzer-bar-panel .kibitzer-panel-footer {
+    background: var(--kb-secondary);
+    padding: 8px 14px;
+    border-top: 1px dashed var(--kb-primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.kibitzer-bar-panel .kibitzer-status-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--kb-text);
+}
+
+.kibitzer-bar-panel .kibitzer-status-icon {
+    font-size: 14px;
+    color: var(--kb-accent);
+    animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+.kibitzer-bar-panel .kibitzer-panel-footer::after {
+    content: '◁  ❚❚  ▷';
+    font-size: 10px;
+    color: var(--kb-primary);
+    opacity: 0.6;
+    letter-spacing: 2px;
+}
+
+/* Scrollbar for bar panel */
+.kibitzer-bar-panel .kibitzer-panel-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.kibitzer-bar-panel .kibitzer-panel-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.kibitzer-bar-panel .kibitzer-panel-body::-webkit-scrollbar-thumb {
+    background: var(--kb-primary);
+    border-radius: 3px;
+}
+
+.kibitzer-bar-panel .kibitzer-panel-body::-webkit-scrollbar-thumb:hover {
+    background: var(--kb-accent);
+}
