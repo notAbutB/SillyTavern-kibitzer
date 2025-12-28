@@ -985,6 +985,10 @@
     font-size: 13px;
     color: var(--kb-accent);
     flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.75);
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-shadow: 0 0 8px #fff, 0 0 16px #fff;
 }
 
 .kibitzer-bar-separator {
@@ -1008,6 +1012,10 @@
     font-size: 13px;
     color: var(--kb-text);
     white-space: nowrap;
+    background: rgba(255, 255, 255, 0.75);
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-shadow: 0 0 8px #fff, 0 0 16px #fff;
 }
 
 /* Default state - text is visible and static */
