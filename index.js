@@ -1644,6 +1644,7 @@ async function generateCommentary(force = false) {
 You are ${kibitzerName}.
 ${characterPersonality ? `[Your Personality]\n${characterPersonality}` : ''}
 ${stylePrompt ? `[Your Style]\n${stylePrompt}` : ''}
+...
 
 ### TASK
 You are watching the "Roleplay Log" below. Provide a single, short (1-3 sentences) in-character reaction.
