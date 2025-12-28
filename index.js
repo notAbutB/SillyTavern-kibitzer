@@ -832,9 +832,6 @@ function createBar() {
     
     const bar = document.createElement('div');
     bar.id = 'kibitzer-bar';
-    // Essential for absolute positioning of panel
-    bar.style.position = 'relative';
-    bar.style.overflow = 'visible';
     
     bar.innerHTML = `
         <div class="kibitzer-bar-avatar">
@@ -979,10 +976,25 @@ function setupBarEvents() {
             closeBarPanel();
         }
     });
+    
+    // Reposition panel on resize
+    window.addEventListener('resize', () => {
+        if (bar.classList.contains('panel-open')) {
+            positionBarPanel();
+        }
+    });
 }
 
 function positionBarPanel() {
-    // CSS handles all positioning via .panel-open class
+    const bar = kibitzer.bar;
+    if (!bar) return;
+    
+    const panel = bar.querySelector('.kibitzer-bar-panel');
+    if (!panel) return;
+    
+    const barRect = bar.getBoundingClientRect();
+    // Position panel above the bar using fixed positioning
+    panel.style.bottom = `${window.innerHeight - barRect.top + 8}px`;
 }
 
 function toggleBarPanel() {
@@ -995,6 +1007,7 @@ function toggleBarPanel() {
 function openBarPanel() {
     const bar = kibitzer.bar;
     if (!bar) return;
+    positionBarPanel();
     bar.classList.add('panel-open');
 }
 
