@@ -926,7 +926,6 @@
     cursor: pointer;
     transition: all 0.3s ease;
     z-index: 100;
-    overflow: visible;
 }
 
 #kibitzer-bar.has-new {
@@ -986,10 +985,6 @@
     font-size: 13px;
     color: var(--kb-accent);
     flex-shrink: 0;
-    background: rgba(255, 255, 255, 0.75);
-    padding: 2px 8px;
-    border-radius: 4px;
-    text-shadow: 0 0 8px #fff, 0 0 16px #fff;
 }
 
 .kibitzer-bar-separator {
@@ -1013,10 +1008,6 @@
     font-size: 13px;
     color: var(--kb-text);
     white-space: nowrap;
-    background: rgba(255, 255, 255, 0.75);
-    padding: 2px 8px;
-    border-radius: 4px;
-    text-shadow: 0 0 8px #fff, 0 0 16px #fff;
 }
 
 /* Default state - text is visible and static */
@@ -1075,28 +1066,42 @@
 .kibitzer-bar-typing .dot:nth-child(3) { animation-delay: 0.4s; }
 
 /* ========================================
-   Bar Panel - Fixed Right Side Positioning
+   Bar Panel - Smart Positioning
    ======================================== */
 
 .kibitzer-bar-panel {
-    position: fixed;
-    bottom: auto;
-    right: 10px;
-    left: auto;
-    transform: translateY(10px) scale(0.95);
-    transform-origin: bottom right;
-    width: 280px;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(10px) scale(0.95);
+    width: 300px;
     max-width: calc(100vw - 20px);
     opacity: 0;
     pointer-events: none;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    z-index: 10000;
+    z-index: 1000;
+}
+
+/* Panel opening upward (default) */
+.kibitzer-bar-panel.panel-above {
+    transform-origin: bottom center;
+}
+
+/* Panel opening downward */
+.kibitzer-bar-panel.panel-below {
+    transform-origin: top center;
 }
 
 #kibitzer-bar.panel-open .kibitzer-bar-panel {
     opacity: 1;
     pointer-events: auto;
-    transform: translateY(0) scale(1);
+    transform: translateX(-50%) translateY(0) scale(1);
+}
+
+/* Adjust transform when panel has explicit positioning from JS */
+#kibitzer-bar.panel-open .kibitzer-bar-panel.panel-above,
+#kibitzer-bar.panel-open .kibitzer-bar-panel.panel-below {
+    /* Let JS handle the transform via inline styles */
 }
 
 .kibitzer-bar-panel-inner {
@@ -1291,4 +1296,206 @@
 
 .kibitzer-bar-panel .kibitzer-panel-body::-webkit-scrollbar-thumb:hover {
     background: var(--kb-accent);
+}
+
+/* ========================================
+   Quick API Settings
+   ======================================== */
+
+.kibitzer-quickapi-options {
+    margin-left: 12px;
+    padding-left: 12px;
+    border-left: 2px solid #ffb6c1;
+    margin-top: 10px;
+}
+
+.kibitzer-provider-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.kibitzer-provider-btn {
+    padding: 8px 12px;
+    border: 2px solid #ddd;
+    border-radius:  10px;
+    background:  #ffffff;
+    color: #5a4a5c;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.kibitzer-provider-btn:hover {
+    border-color: #ffb6c1;
+    background: #fff5f7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 182, 193, 0.3);
+}
+
+.kibitzer-provider-btn.selected {
+    border-color: #ff8fa3;
+    background: linear-gradient(135deg, #ffe4e9 0%, #ffb6c1 100%);
+    color: #5a4a5c;
+    box-shadow: 0 2px 8px rgba(255, 143, 163, 0.4);
+}
+
+.kibitzer-provider-btn.selected:: before {
+    content: '✓ ';
+    font-weight: bold;
+}
+
+.kibitzer-model-select-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.kibitzer-model-select-row select {
+    flex: 1;
+}
+
+.kibitzer-model-select-row . menu_button {
+    margin:  0;
+    padding: 6px 10px;
+    flex-shrink: 0;
+}
+
+.kibitzer-loading {
+    color: #ff8fa3;
+    font-size: 14px;
+}
+
+.kibitzer-quickapi-status {
+    padding: 10px 14px;
+    background: linear-gradient(135deg, rgba(255, 182, 193, 0.1) 0%, rgba(255, 228, 233, 0.2) 100%);
+    border-radius: 10px;
+    border: 1px dashed rgba(255, 143, 163, 0.3);
+    font-size: 13px;
+}
+
+.kibitzer-status-inactive {
+    color: #999;
+    font-style: italic;
+}
+
+.kibitzer-status-warning {
+    color: #e67e22;
+}
+
+.kibitzer-status-active {
+    color: #27ae60;
+}
+
+.kibitzer-status-active strong {
+    color: #ff8fa3;
+}
+
+/* Make dropdown searchable/scrollable for OpenRouter's many models */
+#kibitzer-quickapi-model-select {
+    max-height: 300px;
+}
+
+/* Make dropdown searchable/scrollable for OpenRouter's many models */
+#kibitzer-quickapi-model-select {
+    max-height: 300px;
+}
+
+/* ========================================
+   Quick API Button Row (Connect & Test)
+   ======================================== */
+
+.kibitzer-quickapi-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.kibitzer-quickapi-buttons . menu_button {
+    flex:  1;
+    min-width: 100px;
+    margin: 0 ! important;
+    transition: all 0.3s ease;
+}
+
+.kibitzer-quickapi-buttons .menu_button. success {
+    background: linear-gradient(135deg, #a8e6cf 0%, #56c596 100%) !important;
+    border-color: #56c596 !important;
+    color: #2d5a47 !important;
+}
+
+. kibitzer-quickapi-buttons . menu_button.error {
+    background: linear-gradient(135deg, #ffb6b6 0%, #ff6b6b 100%) !important;
+    border-color: #ff6b6b !important;
+    color: #5a2d2d !important;
+}
+
+.kibitzer-quickapi-buttons .menu_button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Make the connect button slightly more prominent */
+#kibitzer-quickapi-connect {
+    background:  linear-gradient(135deg, #e8f4fd 0%, #d1e8fa 100%);
+    border-color: #5bb5e0;
+}
+
+#kibitzer-quickapi-connect:hover: not(:disabled) {
+    background: linear-gradient(135deg, #d1e8fa 0%, #b8dcf5 100%);
+    border-color: #3a9fd0;
+}
+
+/* ========================================
+   Quick API Drawer Styles
+   ======================================== */
+
+#kibitzer-settings . inline-drawer {
+    margin-bottom: 10px;
+}
+
+#kibitzer-settings #kibitzer-quickapi-drawer-toggle {
+    background:  linear-gradient(90deg, rgba(255, 182, 193, 0.2) 0%, transparent 100%);
+    border-left: 3px solid #ff8fa3;
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+#kibitzer-settings #kibitzer-quickapi-drawer-toggle:hover {
+    background: linear-gradient(90deg, rgba(255, 182, 193, 0.35) 0%, transparent 100%);
+}
+
+#kibitzer-settings #kibitzer-quickapi-drawer-toggle b {
+    color: #ff8fa3;
+    font-size: 13px;
+}
+
+#kibitzer-settings #kibitzer-quickapi-drawer-content {
+    padding:  12px 0 0 0;
+}
+
+#kibitzer-settings #kibitzer-quickapi-drawer-content . kibitzer-quickapi-options {
+    margin-left: 0;
+    padding-left: 12px;
+    border-left: 2px solid #ffb6c1;
+    margin-top: 10px;
+}
+
+/* Drawer icon rotation */
+#kibitzer-settings . inline-drawer-icon. up {
+    transform: rotate(180deg);
+}
+
+#kibitzer-settings . inline-drawer-icon {
+    transition: transform 0.3s ease;
 }
