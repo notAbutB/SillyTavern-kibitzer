@@ -230,7 +230,6 @@ function suppressToasts(suppress) {
 
 // Commentary style presets
 const COMMENTARY_STYLES = {
-    none: '', // Empty string = no style guidance
     snarky: 'Tone: Witty, slightly sardonic, entertaining but not mean-spirited.',
     supportive: 'Tone: Enthusiastic, encouraging, cheering on the participants.',
     analytical: 'Tone: Insightful, observant, focusing on choices and narrative.',
@@ -832,7 +831,7 @@ function createWidget() {
     
     widget.innerHTML = `
         <div class="kibitzer-avatar-bubble">
-            <img class="kibitzer-avatar" src="" alt="Kibitzer" />
+            <img class="kibitzer-avatar" src="" alt="Kibitzer" draggable="false" />
             <div class="kibitzer-avatar-placeholder">
                 <i class="fa-solid fa-cat"></i>
             </div>
@@ -1551,6 +1550,8 @@ function hideSpeechBubble() {
 function startDrag(e) {
     if (e.target.closest('.kibitzer-panel') || e.target.closest('.kibitzer-speech-bubble')) return;
     
+    e.preventDefault();  //
+    
     kibitzer.isDragging = true;
     kibitzer.wasDragging = false;
     kibitzer.dragStartPos = { x: e.clientX, y: e.clientY };
@@ -1770,7 +1771,7 @@ function buildCommentaryPrompt() {
         }
     }
     
-    const stylePrompt = COMMENTARY_STYLES[settings.commentaryStyle] ??  COMMENTARY_STYLES.snarky;
+    const stylePrompt = COMMENTARY_STYLES[settings.commentaryStyle] || COMMENTARY_STYLES. snarky;
     const kibitzerName = settings.characterName || 'Kibitzer';
     
     // If user has a custom system prompt, use it with variable substitution
@@ -1797,17 +1798,12 @@ You are ${kibitzerName}.
 [Your Personality & Traits]
 ${characterPersonality}
 `;
-    } else if (stylePrompt) {
-        // If no character selected but style is set, use the generic style as identity
+    } else {
+        // If no character selected, use the generic style as identity
         personaBlock = `
 You are ${kibitzerName}.
 [Your Style]
 ${stylePrompt}
-`;
-    } else {
-        // No character AND no style - just use the name
-        personaBlock = `
-You are ${kibitzerName}. 
 `;
     }
 
@@ -2177,12 +2173,11 @@ async function setupSettingsUI() {
                 <div class="kibitzer-setting-row">
                     <label for="kibitzer-style-select">Commentary Style:</label>
                     <select id="kibitzer-style-select" class="text_pole">
-    <option value="none">🚫 None (Character Only)</option>
-    <option value="snarky">🎭 Snarky</option>
-    <option value="supportive">🎉 Supportive</option>
-    <option value="analytical">🔍 Analytical</option>
-    <option value="chaotic">🌀 Chaotic</option>
-</select>
+                        <option value="snarky">🎭 Snarky</option>
+                        <option value="supportive">🎉 Supportive</option>
+                        <option value="analytical">🔍 Analytical</option>
+                        <option value="chaotic">🌀 Chaotic</option>
+                    </select>
                     <small>The tone of commentary (can be overridden by character personality)</small>
                 </div>
                 
