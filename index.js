@@ -34,7 +34,7 @@ const defaultSettings = {
     messageCount: 0,
     widgetPosition: { x: 20, y: 20 },
     widgetMinimized: false,
-    customSystemPrompt: '',
+    language: 'english', // 'english', 'korean', 'japanese', 'chinese'
     maxContextMessages: 10,
     contextLocked: false,
     autoShow: true,
@@ -179,6 +179,27 @@ const AVATAR_SIZES = {
     medium: 70,
     large: 90,
 };
+
+// Language presets for commentary
+const LANGUAGES = {
+    english: {
+        name: '🇺🇸 English',
+        instruction: 'Respond in English.',
+    },
+    korean: {
+        name: '🇰🇷 한국어 (Korean)',
+        instruction: 'Respond in Korean (한국어로 답변하세요).',
+    },
+    japanese: {
+        name: '🇯🇵 日本語 (Japanese)',
+        instruction: 'Respond in Japanese (日本語で答えてください).',
+    },
+    chinese: {
+        name: '🇨🇳 中文 (Chinese)',
+        instruction: 'Respond in Chinese (请用中文回答).',
+    },
+};
+
 
 /**
  * Suppress toast notifications temporarily
@@ -1774,20 +1795,6 @@ function buildCommentaryPrompt() {
     const stylePrompt = COMMENTARY_STYLES[settings.commentaryStyle] || COMMENTARY_STYLES. snarky;
     const kibitzerName = settings.characterName || 'Kibitzer';
     
-    // If user has a custom system prompt, use it with variable substitution
-    if (settings.customSystemPrompt && settings.customSystemPrompt.trim()) {
-        let customPrompt = settings.customSystemPrompt;
-        
-        // Variable substitution - replace all instances (case insensitive)
-        customPrompt = customPrompt.replace(/\{\{kibitzer_name\}\}/gi, kibitzerName);
-        customPrompt = customPrompt.replace(/\{\{chat_log\}\}/gi, chatLog);
-        customPrompt = customPrompt.replace(/\{\{personality\}\}/gi, characterPersonality);
-        customPrompt = customPrompt.replace(/\{\{style\}\}/gi, stylePrompt);
-        
-        console.log(DEBUG_PREFIX, 'Using custom prompt with variables substituted');
-        return customPrompt;
-    }
-    
     // Default prompt logic (when no custom prompt is set)
     let personaBlock = '';
     
@@ -1807,25 +1814,29 @@ ${stylePrompt}
 `;
     }
 
+    // Get language instruction
+    const languageInstruction = LANGUAGES[settings.language]?.instruction || LANGUAGES.english.instruction;
+
     const prompt = `
 ### IDENTITY
 ${personaBlock}
 
 ### TASK
-You are watching the "Roleplay Log" below as an observer. 
-Your goal is to provide a single, short, in-character reaction to the events. 
+You are watching the "Roleplay Log" below as an observer.  
+Your goal is to provide a single, short, in-character reaction to the events.  
 
 ### RULES
-1. React strictly according to your personality (${kibitzerName}).
-2. Do NOT participate in the roleplay.  You are just watching it.
-3. Do NOT repeat the dialogue from the log.
+1. React according to your personality (${kibitzerName}).
+2. Do NOT participate in the roleplay.
+3. Do NOT repeat the dialogue from the log. 
 4. Keep the comment short (1-3 sentences).
+5. ${languageInstruction}
 
 ### ROLEPLAY LOG
 ${chatLog}
 
 ### RESPONSE
-(As ${kibitzerName}, I will ignore the log format and only provide my in-character reaction):
+(As ${kibitzerName}, I will ignore the log format and only provide my in-character reaction in the specified language):
 `;
 
     return prompt;
@@ -2181,6 +2192,17 @@ async function setupSettingsUI() {
                     <small>The tone of commentary (can be overridden by character personality)</small>
                 </div>
                 
+                <div class="kibitzer-setting-row">
+                    <label for="kibitzer-language-select">Commentary Language:</label>
+                    <select id="kibitzer-language-select" class="text_pole">
+                        <option value="english">🇺🇸 English</option>
+                        <option value="korean">🇰🇷 한국어 (Korean)</option>
+                        <option value="japanese">🇯🇵 日本語 (Japanese)</option>
+                        <option value="chinese">🇨🇳 中文 (Chinese)</option>
+                    </select>
+                    <small>Select the language for Kibitzer's commentary</small>
+                </div>
+                
                 <hr class="sysHR" />
                 <h4 class="kibitzer-section-title">🔌 Connection Profile</h4>
                 
@@ -2299,19 +2321,6 @@ async function setupSettingsUI() {
                     </div>
                     <small>How many recent messages to analyze</small>
                 </div>
-                
-                <div class="kibitzer-setting-row">
-    <label for="kibitzer-custom-prompt">Custom System Prompt (optional):</label>
-    <textarea id="kibitzer-custom-prompt" class="text_pole" rows="8" 
-        placeholder="Leave empty to use default prompt. 
-
-Available variables:
-{{kibitzer_name}} - The critic character's name
-{{chat_log}} - Recent chat messages
-{{personality}} - Character's personality/description
-{{style}} - Selected commentary style"></textarea>
-    <small>Use variables like <code>{{kibitzer_name}}</code>, <code>{{chat_log}}</code>, <code>{{personality}}</code>, <code>{{style}}</code> to insert dynamic content</small>
-</div>
                 
                 <hr class="sysHR" />
                 <h4 class="kibitzer-section-title">✨ UI Customization</h4>
@@ -2596,12 +2605,14 @@ Available variables:
         });
     }
     
-    const customPrompt = document.getElementById('kibitzer-custom-prompt');
-    if (customPrompt) {
-        customPrompt.value = settings.customSystemPrompt;
-        customPrompt.addEventListener('change', (e) => {
-            settings.customSystemPrompt = e.target.value;
+        // Language selector
+    const languageSelect = document. getElementById('kibitzer-language-select');
+    if (languageSelect) {
+        languageSelect. value = settings.language || 'english';
+        languageSelect.addEventListener('change', (e) => {
+            settings.language = e.target.value;
             saveSettings();
+            console.log(DEBUG_PREFIX, 'Language set to:', settings.language);
         });
     }
     
